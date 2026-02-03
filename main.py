@@ -1,25 +1,27 @@
 from fastapi import FastAPI
-from pydantic import BaseModel
 import os
 from openai import OpenAI
 
-app = FastAPI()
+# OpenAI client (Render env variable থেকে key নেবে)
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-class ChatRequest(BaseModel):
-    message: str
+app = FastAPI()
 
 @app.get("/")
 def root():
-    return {"status": "Buddy backend running"}
+    return {"status": "Buddy backend is running"}
 
 @app.post("/chat")
-def chat(req: ChatRequest):
-    response = client.chat.completions.create(
-        model="gpt-4.1-mini",
-        messages=[
-            {"role": "system", "content": "You are Buddy, a personal AI assistant."},
-            {"role": "user", "content": req.message}
-        ]
-    )
-    return {"reply": response.choices[0].message.content}
+def chat(msg: str):
+    try:
+        response = client.responses.create(
+            model="gpt-4.1-mini",
+            input=msg
+        )
+        return {
+            "reply": response.output_text
+        }
+    except Exception as e:
+        return {
+            "error": str(e)
+        }

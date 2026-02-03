@@ -1,7 +1,8 @@
 from fastapi import FastAPI
+import os
 
 app = FastAPI()
 
 @app.get("/")
 def root():
-    return {"status": "Buddy backend is running"}
+    return {"status": "Buddy backend running"}

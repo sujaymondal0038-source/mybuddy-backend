@@ -4,4 +4,4 @@ app = FastAPI()
 
 @app.get("/")
 def root():
-    return {"msg": "Buddy backend alive"}
+    return {"status": "ok"}

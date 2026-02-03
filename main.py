@@ -1,28 +1,28 @@
 from fastapi import FastAPI
-from pydantic import BaseModel
-import openai
 import os
-
-openai.api_key = os.getenv("OPENAI_API_KEY")
+import openai
 
 app = FastAPI()
 
-class ChatRequest(BaseModel):
-    message: str
-
 @app.get("/")
 def root():
-    return {"status": "Buddy backend is running"}
+    return {"status": "Buddy backend is alive"}
 
-@app.post("/chat")
-def chat(req: ChatRequest):
+@app.get("/test")
+def test():
+    return {"msg": "Hello from Buddy"}
+
+@app.get("/ask")
+def ask(q: str):
+    openai.api_key = os.getenv("OPENAI_API_KEY")
+    if not openai.api_key:
+        return {"error": "No API key found"}
+
     response = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
         messages=[
-            {"role": "system", "content": "You are Buddy, my personal AI friend and assistant."},
-            {"role": "user", "content": req.message}
+            {"role": "system", "content": "You are Buddy, my personal AI assistant"},
+            {"role": "user", "content": q}
         ]
     )
-    return {
-        "reply": response["choices"][0]["message"]["content"]
-    }
+    return {"reply": response["choices"][0]["message"]["content"]}

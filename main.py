@@ -1,32 +1,28 @@
+from fastapi import FastAPI
+from pydantic import BaseModel
+import openai
 import os
-from flask import Flask, request, jsonify
-from openai import OpenAI
 
-app = Flask(__name__)
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
-# OpenAI client using Railway environment variable
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+app = FastAPI()
 
-@app.route("/")
-def home():
-    return "Buddy backend is alive 🚀"
+class ChatRequest(BaseModel):
+    message: str
 
-@app.route("/chat", methods=["POST"])
-def chat():
-    data = request.json
-    user_message = data.get("message", "")
+@app.get("/")
+def root():
+    return {"status": "Buddy backend is running"}
 
-    response = client.chat.completions.create(
-        model="gpt-4.1-mini",
+@app.post("/chat")
+def chat(req: ChatRequest):
+    response = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
         messages=[
-            {"role": "system", "content": "You are Buddy, my personal AI assistant and best friend."},
-            {"role": "user", "content": user_message}
+            {"role": "system", "content": "You are Buddy, my personal AI friend and assistant."},
+            {"role": "user", "content": req.message}
         ]
     )
-
-    reply = response.choices[0].message.content
-    return jsonify({"reply": reply})
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
-
+    return {
+        "reply": response["choices"][0]["message"]["content"]
+    }
